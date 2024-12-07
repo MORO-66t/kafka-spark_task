@@ -11,7 +11,7 @@ PySpark 3.2.4
 
 Python 3.9
 
-Kafka  2.8
+Kafka  2.8.0
 
 Mysql 
 
