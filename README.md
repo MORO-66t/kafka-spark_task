@@ -2,16 +2,25 @@
 **what we need to install **
 
 Java jdk 8
+
 Spark 3.2.4
+
 Hadoop 2.7
+
 PySpark 3.2.4
+
 Python 3.9
+
 Kafka  2.8
+
 Mysql 
+
 Mysql connector jdbc (java mysql integration to allow write to Mysql)
 
+<br> </br>
 
 how to work all these together 👍
+
 1- Navigate to Kafka Directory:
 
 // ex D:\FHCAI\Bigdata\kafka_2.12-2.8.0
