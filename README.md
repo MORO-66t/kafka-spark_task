@@ -1,3 +1,82 @@
+﻿# BigData Real-Time Streaming: Amazon Product Rating Pipeline
+
+## Overview
+
+A real-time data streaming pipeline that processes Amazon product reviews using **Apache Kafka** and **Apache Spark Structured Streaming**, then stores aggregated results in **MySQL**.
+
+The pipeline reads consumer reviews of Amazon products from a CSV dataset, streams each review through Kafka, and uses Spark to compute a running weighted average rating per product category -- all in real time.
+
+## How It Works
+
+1. **Data Cleaning** (`project.ipynb` -- Cell 1): Loads the raw dataset (`Datafiniti_Amazon_Consumer_Reviews_of_Amazon_Products.csv`), selects relevant columns (`primaryCategories`, `reviews.rating`, `reviews.text`, `reviews.title`, `reviews.username`), drops rows with missing values, and saves the result as `Cleaned_Reviews.csv`.
+
+2. **Kafka Producer** (`project.py` / `project.ipynb` -- Cell 2): Reads `Cleaned_Reviews.csv` and sends each review as a JSON message (`primaryCategories`, `reviews_rating`) to the Kafka topic `product-reviews`, one record per second.
+
+3. **Spark Streaming Consumer** (`spark.py`): Subscribes to `product-reviews` via Spark Structured Streaming, parses the JSON messages, groups by `primaryCategories`, computes a running average rating, and writes each micro-batch to the MySQL table `average_ratings` using a weighted average to preserve historical accuracy.
+
+## Project Structure
+
+| File / Folder | Description |
+|---|---|
+| `project.ipynb` | Notebook for data cleaning and interactive Kafka producer |
+| `project.py` | Standalone Kafka producer script |
+| `spark.py` | Spark Structured Streaming consumer + MySQL writer |
+| `Cleaned_Reviews.csv` | Cleaned review data (generated from notebook) |
+| `Datafiniti_Amazon_Consumer_Reviews_of_Amazon_Products.csv` | Raw Amazon reviews dataset |
+| `kafka_2.12-2.8.0/` | Local Kafka installation |
+| `mysql-connector-j-9.1.0/` | MySQL JDBC connector for Spark-to-MySQL writes |
+
+## Prerequisites
+
+| Tool | Version |
+|---|---|
+| Java JDK | 8 |
+| Apache Spark | 3.2.4 |
+| Hadoop | 2.7 |
+| PySpark | 3.2.4 |
+| Python | 3.9 |
+| Apache Kafka | 2.8.0 |
+| MySQL | Any recent version |
+| MySQL Connector/J | 9.1.0 (included) |
+
+Python packages: `kafka-python`, `pandas`, `mysql-connector-python`
+
+## Quick Start
+
+```bash
+# 1. Start Zookeeper
+bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+
+# 2. Start Kafka Broker
+bin\windows\kafka-server-start.bat config\server.properties
+
+# 3. Make sure MySQL is running and the database/table exist
+#    Database: reviewsdb
+#    Table: average_ratings (primaryCategories VARCHAR PK, reviews_rating DOUBLE, total_reviews INT)
+
+# 4. Run the Kafka Producer (sends review data to the topic)
+python project.py
+
+# 5. In a separate terminal, run the Spark consumer
+#    (make sure mysql-connector-j-9.1.0/ folder is in the same directory as spark.py)
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.4 --jars mysql-connector-j-9.1.0/mysql-connector-j-9.1.0.jar spark.py
+```
+
+## MySQL Table Schema
+
+```sql
+CREATE TABLE average_ratings (
+    primaryCategories VARCHAR(255) PRIMARY KEY,
+    reviews_rating DOUBLE,
+    total_reviews INT
+);
+```
+
+---
+---
+
+# Old README (Architecture / Command Reference)
+
 # kafka-spark_task
 **what we need to install **
 
